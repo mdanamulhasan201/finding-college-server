@@ -77,15 +77,14 @@ async function run() {
       }
     });
 
-
-   // post option
-   app.post("/postCollege", async (req, res) => {
-    const body = req.body;
-    body.createdAt = new Date();
-    const result = await myCollege.insertOne(body);
-    // console.log(result);
-    res.send(result);
-  });
+    // post option
+    app.post("/postCollege", async (req, res) => {
+      const body = req.body;
+      body.createdAt = new Date();
+      const result = await myCollege.insertOne(body);
+      // console.log(result);
+      res.send(result);
+    });
 
     // post option
     app.post("/review", async (req, res) => {
@@ -104,8 +103,14 @@ async function run() {
       res.send(result);
     });
 
-  
 
+    app.get("/myCollege", async (req, res) => {
+      const result = await myCollege
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
