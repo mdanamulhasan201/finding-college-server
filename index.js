@@ -9,6 +9,10 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("server is running");
+});
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.kjjf84i.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   serverApi: {
@@ -24,6 +28,8 @@ async function run() {
     await client.connect();
 
     const collegeCollection = client.db("collegeFinding").collection("college");
+    const userReview = client.db("collegeFinding").collection("userReview");
+    const myCollege = client.db("collegeFinding").collection("myCollege");
 
     const indexKeys = { carName: 1, category: 1 };
     // Create index and wait for it to finish
@@ -31,7 +37,10 @@ async function run() {
 
     // Route to get all colleges
     app.get("/collegeList", async (req, res) => {
-      const result = await collegeCollection.find({}).sort({ createdAt: -1 }).toArray();
+      const result = await collegeCollection
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
       res.send(result);
     });
 
@@ -68,9 +77,41 @@ async function run() {
       }
     });
 
+
+   // post option
+   app.post("/postCollege", async (req, res) => {
+    const body = req.body;
+    body.createdAt = new Date();
+    const result = await myCollege.insertOne(body);
+    // console.log(result);
+    res.send(result);
+  });
+
+    // post option
+    app.post("/review", async (req, res) => {
+      const body = req.body;
+      body.createdAt = new Date();
+      const result = await userReview.insertOne(body);
+      // console.log(result);
+      res.send(result);
+    });
+
+    app.get("/reviews", async (req, res) => {
+      const result = await userReview
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+      res.send(result);
+    });
+
+  
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
   } finally {
